@@ -125,7 +125,6 @@
         const auth = getAuth();
         const db = getFirestore();
 
-        const totalSupply = 10000;
         let currentSupply = totalSupply;
 
         const loginForm = document.getElementById('login-form');
@@ -243,6 +242,7 @@
             };
             addDoc(collection(db, 'transactions'), transaction)
                 .then(() => {
+                    currentSupply += amount; // Incrementar el suministro actual al quemar tokens
                     alert(`Redeemed ${amount} Pupicreditos for $${amount} USD`);
                     redeemAmountInput.value = '';
                     loadWallet();
