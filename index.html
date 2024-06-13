@@ -115,6 +115,23 @@
             margin-top: 10px;
             font-weight: bold;
         }
+
+        #transactions-container {
+            margin-top: 20px;
+        }
+
+        #transactions-toggle {
+            background-color: #8ecae6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+
+        #transactions-toggle:hover {
+            background-color: #219ebc;
+        }
     </style>
 </head>
 <body>
@@ -149,8 +166,10 @@
                 <div></div>
             </div>
             <div id="redeem-message">You now have $<span id="redeem-amount"></span> ready to spend!</div>
-            <h3>Transactions</h3>
-            <ul id="transactions"></ul>
+            <div id="transactions-container">
+                <button id="transactions-toggle" onclick="toggleTransactions()">Show Transactions</button>
+                <ul id="transactions" class="hidden"></ul>
+            </div>
         </div>
     </div>
     <script type="module">
@@ -184,6 +203,7 @@
         const balanceElement = document.getElementById('balance');
         const supplyElement = document.getElementById('supply');
         const transactionsElement = document.getElementById('transactions');
+        const transactionsToggle = document.getElementById('transactions-toggle');
         const leonardoActions = document.getElementById('leonardo-actions');
         const yasminActions = document.getElementById('yasmin-actions');
         const loadingBar = document.getElementById('loading-bar');
@@ -282,7 +302,8 @@
 
         window.redeem = function redeem() {
             const amount = parseFloat(redeemAmountInput.value);
-            if (isNaN(amount) || amount <= 0 || amount > parseFloat(balanceElement.textContent.split(' ')[1])) {
+            const currentBalance = parseFloat(balanceElement.textContent.split(' ')[1]);
+            if (isNaN(amount) || amount <= 0 || amount > currentBalance) {
                 alert('Please enter a valid amount to redeem');
                 return;
             }
@@ -318,7 +339,8 @@
 
         window.transferBack = function transferBack() {
             const amount = parseFloat(transferBackAmountInput.value);
-            if (isNaN(amount) || amount <= 0 || amount > parseFloat(balanceElement.textContent.split(' ')[1])) {
+            const currentBalance = parseFloat(balanceElement.textContent.split(' ')[1]);
+            if (isNaN(amount) || amount <= 0 || amount > currentBalance) {
                 alert('Please enter a valid amount to transfer back');
                 return;
             }
@@ -393,6 +415,16 @@
             setTimeout(() => {
                 loadingBar.style.display = 'none';
             }, 2000);
+        }
+
+        function toggleTransactions() {
+            if (transactionsElement.classList.contains('hidden')) {
+                transactionsElement.classList.remove('hidden');
+                transactionsToggle.textContent = 'Hide Transactions';
+            } else {
+                transactionsElement.classList.add('hidden');
+                transactionsToggle.textContent = 'Show Transactions';
+            }
         }
 
         function getDisplayName(email) {
