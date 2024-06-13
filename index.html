@@ -218,33 +218,33 @@
                 });
         }
 
-        window.redeem = function redeem() {
-            const amount = parseFloat(redeemAmountInput.value);
-            if (isNaN(amount) || amount <= 0) {
-                alert('Please enter a valid amount to redeem');
-                return;
-            }
-            if (auth.currentUser.email !== girlfriendEmail) {
-                alert("Only Yasmin can redeem Pupicreditos.");
-                return;
-            }
-            const transaction = {
-                from: girlfriendEmail,
-                to: "burn",
-                amount,
-                timestamp: serverTimestamp()
-            };
-            addDoc(collection(db, 'transactions'), transaction)
-                .then(() => {
-                    alert(`Redeemed ${amount} Pupicreditos for $${amount} USD`);
-                    redeemAmountInput.value = '';
-                    loadWallet();
-                })
-                .catch(error => {
-                    console.error('Error redeeming Pupicreditos:', error);
-                    alert('Error redeeming Pupicreditos: ' + error.message);
-                });
-        }
+       window.redeem = function redeem() {
+    const amount = parseFloat(redeemAmountInput.value);
+    if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid amount to redeem');
+        return;
+    }
+    if (auth.currentUser.email !== girlfriendEmail) {
+        alert("Only Yasmina can redeem Pupicreditos.");
+        return;
+    }
+    const transaction = {
+        from: girlfriendEmail,
+        to: "burn",
+        amount,
+        timestamp: serverTimestamp()
+    };
+    addDoc(collection(db, 'transactions'), transaction)
+        .then(() => {
+            alert(`Redeemed ${amount} Pupicreditos for $${amount} USD`);
+            redeemAmountInput.value = '';
+            loadWallet();
+        })
+        .catch(error => {
+            console.error('Error redeeming Pupicreditos:', error);
+            alert('Error redeeming Pupicreditos: ' + error.message);
+        });
+}
 
         window.transferBack = function transferBack() {
             const amount = parseFloat(transferBackAmountInput.value);
@@ -274,22 +274,27 @@
         }
 
         function loadWallet() {
-            const user = auth.currentUser;
-            const q = query(collection(db, 'transactions'), where('to', '==', user.email));
-            onSnapshot(q, snapshot => {
-                let balance = 0;
-                const transactions = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    balance += data.amount;
-                    transactions.push(data);
-                });
-                balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
-                transactionsElement.innerHTML = transactions.map(t => 
-                    `<li>${t.amount} Pupicreditos from ${t.from} on ${t.timestamp.toDate().toLocaleString()}</li>`).join('');
-            });
-            updateSupply();
-        }
+    const user = auth.currentUser;
+    const q = query(collection(db, 'transactions'), where('to', '==', user.email));
+    onSnapshot(q, snapshot => {
+        let balance = 0;
+        const transactions = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.to === "burn") {
+                balance -= data.amount; // Restar el monto quemado del balance
+            } else {
+                balance += data.amount; // Sumar el monto recibido al balance
+            }
+            transactions.push(data);
+        });
+        balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
+        // Mostrar solo las últimas 50 transacciones
+        transactionsElement.innerHTML = transactions.slice(-50).map(t => 
+            `<li>${t.amount} Pupicreditos from ${t.from} on ${t.timestamp.toDate().toLocaleString()}</li>`).join('');
+    });
+    updateSupply();
+}
 
         function updateSupply() {
             supplyElement.textContent = `Remaining Supply: ${currentSupply} Pupicreditos`;
