@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pupicreditos Wallet</title>
+    <title>PupiWallet</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f8ff;
+            background-color: #1C1C1E;
+            color: #FFFFFF;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,10 +19,11 @@
 
         #app {
             text-align: center;
-            background: #ffffff;
+            background: #2C2C2E;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            width: 300px;
         }
 
         .hidden {
@@ -34,26 +36,24 @@
             padding: 10px;
             width: 80%;
             border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .short-input {
-            width: 50%;
-            font-size: 1.2em;
+            border-radius: 10px;
+            background: #3A3A3C;
+            color: #FFFFFF;
         }
 
         button {
             padding: 10px 20px;
-            background-color: #8ecae6;
+            background-color: #007AFF;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 16px;
+            margin-top: 10px;
         }
 
         button:hover {
-            background-color: #219ebc;
+            background-color: #005BB5;
         }
 
         ul {
@@ -62,24 +62,21 @@
         }
 
         .icon {
-            width: 30px;
-            height: 30px;
+            width: 20px;
+            height: 20px;
             vertical-align: middle;
             margin-left: 10px;
         }
 
         h1, h2, h3 {
-            color: #023047;
+            color: #FFFFFF;
         }
 
         #balance, #supply {
-            color: #ffb703;
+            color: #FFCC00;
             font-size: 1.2em;
             font-weight: bold;
-        }
-
-        #supply {
-            display: none; /* Hidden by default */
+            margin: 20px 0;
         }
 
         #loading-bar {
@@ -94,7 +91,7 @@
         #loading-bar div {
             width: 0;
             height: 100%;
-            background-color: #8ecae6;
+            background-color: #007AFF;
             position: absolute;
             animation: loading 2s ease-in-out;
         }
@@ -113,7 +110,7 @@
             background-color: #28a745;
             color: white;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 10px;
             margin-top: 10px;
             font-weight: bold;
         }
@@ -123,16 +120,17 @@
         }
 
         #transactions-toggle {
-            background-color: #8ecae6;
+            background-color: #007AFF;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
             padding: 10px 20px;
+            margin-top: 10px;
         }
 
         #transactions-toggle:hover {
-            background-color: #219ebc;
+            background-color: #005BB5;
         }
     </style>
 </head>
@@ -445,4 +443,3 @@
     </script>
 </body>
 </html>
-
