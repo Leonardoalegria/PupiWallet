@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pupicreditos Wallet</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <h1>Pupicreditos Wallet</h1>
+        <div id="login-form" class="hidden">
+            <h2>Login</h2>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <button onclick="signUp()">Sign Up</button>
+        </div>
+        <div id="wallet" class="hidden">
+            <h2>Wallet</h2>
+            <div id="balance">Balance: 0 Pupicreditos</div>
+            <button onclick="logout()">Logout</button>
+            <h3>Transfer Pupicreditos</h3>
+            <input type="number" id="amount" placeholder="Amount">
+            <button onclick="transfer()">Transfer</button>
+            <h3>Transactions</h3>
+            <ul id="transactions"></ul>
+        </div>
+    </div>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCsAC7v-QXjUm4vvU7As4yRsIH9I5hgm28",
+            authDomain: "pupiwallet.firebaseapp.com",
+            projectId: "pupiwallet",
+            storageBucket: "pupiwallet.appspot.com",
+            messagingSenderId: "936137192119",
+            appId: "1:936137192119:web:abdc9756a96184481b5332"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore();
+
+        const loginForm = document.getElementById('login-form');
+        const wallet = document.getElementById('wallet');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const amountInput = document.getElementById('amount');
+        const balanceElement = document.getElementById('balance');
+        const transactionsElement = document.getElementById('transactions');
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                loginForm.classList.add('hidden');
+                wallet.classList.remove('hidden');
+                loadWallet();
+            } else {
+                loginForm.classList.remove('hidden');
+                wallet.classList.add('hidden');
+            }
+        });
+
+        function login() {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            signInWithEmailAndPassword(auth, email, password)
+                .catch(error => {
+                    console.error('Error logging in:', error);
+                });
+        }
+
+        function signUp() {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            createUserWithEmailAndPassword(auth, email, password)
+                .catch(error => {
+                    console.error('Error signing up:', error);
+                });
+        }
+
+        function logout() {
+            signOut(auth);
+        }
+
+        function transfer() {
+            const amount = parseFloat(amountInput.value);
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            const user = auth.currentUser;
+            const transaction = {
+                from: user.email,
+                to: 'girlfriend@example.com', // replace with your girlfriend's email
+                amount,
+                timestamp: serverTimestamp()
+            };
+            addDoc(collection(db, 'transactions'), transaction)
+                .then(() => {
+                    amountInput.value = '';
+                    loadWallet();
+                })
+                .catch(error => {
+                    console.error('Error transferring Pupicreditos:', error);
+                });
+        }
+
+        function loadWallet() {
+            const user = auth.currentUser;
+            const q = query(collection(db, 'transactions'), where('to', '==', user.email));
+            onSnapshot(q, snapshot => {
+                let balance = 0;
+                const transactions = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    balance += data.amount;
+                    transactions.push(data);
+                });
+                balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
+                transactionsElement.innerHTML = transactions.map(t => 
+                    `<li>${t.amount} Pupicreditos from ${t.from} on ${t.timestamp.toDate().toLocaleString()}</li>`).join('');
+            });
+        }
+    </script>
+</body>
+</html>
