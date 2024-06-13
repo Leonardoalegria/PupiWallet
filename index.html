@@ -172,280 +172,283 @@
             </div>
         </div>
     </div>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCsAC7v-QXjUm4vvU7As4yRsIH9I5hgm28",
-            authDomain: "pupiwallet.firebaseapp.com",
-            projectId: "pupiwallet",
-            storageBucket: "pupiwallet.appspot.com",
-            messagingSenderId: "936137192119",
-            appId: "1:936137192119:web:abdc9756a96184481b5332"
+    const firebaseConfig = {
+        apiKey: "AIzaSyCsAC7v-QXjUm4vvU7As4yRsIH9I5hgm28",
+        authDomain: "pupiwallet.firebaseapp.com",
+        projectId: "pupiwallet",
+        storageBucket: "pupiwallet.appspot.com",
+        messagingSenderId: "936137192119",
+        appId: "1:936137192119:web:abdc9756a96184481b5332"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+
+    const totalSupply = 10000;
+    let currentSupply = totalSupply;
+
+    const loginForm = document.getElementById('login-form');
+    const wallet = document.getElementById('wallet');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const amountInput = document.getElementById('amount');
+    const redeemAmountInput = document.getElementById('redeemAmount');
+    const transferBackAmountInput = document.getElementById('transferBackAmount');
+    const balanceElement = document.getElementById('balance');
+    const supplyElement = document.getElementById('supply');
+    const transactionsElement = document.getElementById('transactions');
+    const transactionsToggle = document.getElementById('transactions-toggle');
+    const leonardoActions = document.getElementById('leonardo-actions');
+    const yasminActions = document.getElementById('yasmin-actions');
+    const loadingBar = document.getElementById('loading-bar');
+    const redeemMessage = document.getElementById('redeem-message');
+    const redeemAmountText = document.getElementById('redeem-amount');
+
+    const userEmail = "leoalegriaspam@gmail.com";
+    const girlfriendEmail = "yasminagueropreply@gmail.com";
+
+    onAuthStateChanged(auth, user => {
+        if (user) {
+            if (user.email === girlfriendEmail) {
+                console.log("Yasmin is logged in:", user);
+                yasminActions.classList.remove('hidden');
+                balanceElement.style.display = "block";
+            } else if (user.email === userEmail) {
+                console.log("Leonardo is logged in:", user);
+                leonardoActions.classList.remove('hidden');
+                supplyElement.style.display = "block"; // Show supply only to Leonardo
+                balanceElement.style.display = "none"; // Hide balance for Leonardo
+            }
+            loginForm.classList.add('hidden');
+            wallet.classList.remove('hidden');
+            loadWallet();
+        } else {
+            console.log("No user is logged in");
+            loginForm.classList.remove('hidden');
+            wallet.classList.add('hidden');
+            yasminActions.classList.add('hidden');
+            leonardoActions.classList.add('hidden');
+            supplyElement.style.display = "none";
+            balanceElement.style.display = "none";
+        }
+    });
+
+    window.login = function login() {
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        console.log("Attempting to log in with:", email);
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                console.log('Logged in:', userCredential.user);
+            })
+            .catch(error => {
+                console.error('Error logging in:', error);
+                alert('Error logging in: ' + error.message);
+            });
+    }
+
+    window.logout = function logout() {
+        signOut(auth)
+            .then(() => {
+                console.log('Logged out');
+            })
+            .catch(error => {
+                console.error('Error logging out:', error);
+                alert('Error logging out: ' + error.message);
+            });
+    }
+
+    window.transfer = function transfer() {
+        const amount = parseFloat(amountInput.value);
+        if (isNaN(amount) || amount <= 0) {
+            alert('Please enter a valid amount');
+            return;
+        }
+        if (auth.currentUser.email !== userEmail) {
+            alert("Only Leonardo can transfer Pupicreditos.");
+            return;
+        }
+        if (currentSupply < amount) {
+            alert("Insufficient Pupicreditos supply.");
+            return;
+        }
+        const transaction = {
+            from: userEmail,
+            to: girlfriendEmail,
+            amount,
+            timestamp: serverTimestamp()
         };
+        showLoadingBar();
+        addDoc(collection(db, 'transactions'), transaction)
+            .then(() => {
+                currentSupply -= amount;
+                updateSupply();
+                amountInput.value = '';
+                hideLoadingBar();
+                loadWallet(); // Reload to see the transaction immediately
+            })
+            .catch(error => {
+                console.error('Error transferring Pupicreditos:', error);
+                alert('Error transferring Pupicreditos: ' + error.message);
+                hideLoadingBar();
+            });
+    }
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth();
-        const db = getFirestore();
+    window.redeem = function redeem() {
+        const amount = parseFloat(redeemAmountInput.value);
+        const currentBalance = parseFloat(balanceElement.textContent.split(' ')[1]);
+        if (isNaN(amount) || amount <= 0 || amount > currentBalance) {
+            alert('Please enter a valid amount to redeem');
+            return;
+        }
+        if (auth.currentUser.email !== girlfriendEmail) {
+            alert("Only Yasmin can redeem Pupicreditos.");
+            return;
+        }
+        showLoadingBar();
+        const transaction = {
+            from: girlfriendEmail,
+            to: "burn",
+            amount,
+            timestamp: serverTimestamp()
+        };
+        addDoc(collection(db, 'transactions'), transaction)
+            .then(() => {
+                redeemAmountInput.value = '';
+                updateSupply();
+                hideLoadingBar();
+                redeemAmountText.textContent = amount;
+                redeemMessage.style.display = 'block';
+                setTimeout(() => {
+                    redeemMessage.style.display = 'none';
+                }, 3000);
+                loadWallet(); // Reload to see the transaction immediately
+            })
+            .catch(error => {
+                console.error('Error redeeming Pupicreditos:', error);
+                alert('Error redeeming Pupicreditos: ' + error.message);
+                hideLoadingBar();
+            });
+    }
 
-        const totalSupply = 10000;
-        let currentSupply = totalSupply;
+    window.transferBack = function transferBack() {
+        const amount = parseFloat(transferBackAmountInput.value);
+        const currentBalance = parseFloat(balanceElement.textContent.split(' ')[1]);
+        if (isNaN(amount) || amount <= 0 || amount > currentBalance) {
+            alert('Please enter a valid amount to transfer back');
+            return;
+        }
+        if (auth.currentUser.email !== girlfriendEmail) {
+            alert("Only Yasmin can transfer Pupicreditos back to Leonardo.");
+            return;
+        }
+        showLoadingBar();
+        const transaction = {
+            from: girlfriendEmail,
+            to: userEmail,
+            amount,
+            timestamp: serverTimestamp()
+        };
+        addDoc(collection(db, 'transactions'), transaction)
+            .then(() => {
+                currentSupply += amount; // Add the amount back to supply
+                updateSupply();
+                transferBackAmountInput.value = '';
+                hideLoadingBar();
+                loadWallet(); // Reload to see the transaction immediately
+            })
+            .catch(error => {
+                console.error('Error transferring Pupicreditos back:', error);
+                alert('Error transferring Pupicreditos back: ' + error.message);
+                hideLoadingBar();
+            });
+    }
 
-        const loginForm = document.getElementById('login-form');
-        const wallet = document.getElementById('wallet');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const amountInput = document.getElementById('amount');
-        const redeemAmountInput = document.getElementById('redeemAmount');
-        const transferBackAmountInput = document.getElementById('transferBackAmount');
-        const balanceElement = document.getElementById('balance');
-        const supplyElement = document.getElementById('supply');
-        const transactionsElement = document.getElementById('transactions');
-        const transactionsToggle = document.getElementById('transactions-toggle');
-        const leonardoActions = document.getElementBy('leonardo-actions');
-        const yasminActions = document.getElementById('yasmin-actions');
-        const loadingBar = document.getElementById('loading-bar');
-        const redeemMessage = document.getElementById('redeem-message');
-        const redeemAmountText = document.getElementById('redeem-amount');
-
-        const userEmail = "leoalegriaspam@gmail.com";
-        const girlfriendEmail = "yasminagueropreply@gmail.com";
-
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                if (user.email === girlfriendEmail) {
-                    console.log("Yasmin is logged in:", user);
-                    yasminActions.classList.remove('hidden');
-                    balanceElement.style.display = "block";
-                } else if (user.email === userEmail) {
-                    console.log("Leonardo is logged in:", user);
-                    leonardoActions.classList.remove('hidden');
-                    supplyElement.style.display = "block"; // Show supply only to Leonardo
-                    balanceElement.style.display = "none"; // Hide balance for Leonardo
+    function loadWallet() {
+        const user = auth.currentUser;
+        const transactions = [];
+        const q = query(collection(db, 'transactions'), orderBy('timestamp', 'desc'), limit(50));
+        onSnapshot(q, snapshot => {
+            let balance = 0;
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.to === user.email) {
+                    balance += data.amount;
                 }
-                loginForm.classList.add('hidden');
-                wallet.classList.remove('hidden');
-                loadWallet();
-            } else {
-                console.log("No user is logged in");
-                loginForm.classList.remove('hidden');
-                wallet.classList.add('hidden');
-                yasminActions.classList.add('hidden');
-                leonardoActions.classList.add('hidden');
-                supplyElement.style.display = "none";
-                balanceElement.style.display = "none";
+                if (data.from === user.email && data.to === "burn") {
+                    balance -= data.amount; // Subtract burned amount from balance
+                }
+                transactions.push(data);
+            });
+            if (balance < 0) balance = 0; // Prevent negative balance
+            if (user.email === girlfriendEmail) {
+                balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
             }
+            transactionsElement.innerHTML = transactions.map(t => 
+                `<li>${t.amount} Pupicreditos from ${getDisplayName(t.from)} to ${getDisplayName(t.to)} on ${t.timestamp ? t.timestamp.toDate().toLocaleString() : 'Unknown'}</li>`).join('');
         });
+    }
 
-        window.login = function login() {
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            console.log("Attempting to log in with:", email);
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    console.log('Logged in:', userCredential.user);
-                })
-                .catch(error => {
-                    console.error('Error logging in:', error);
-                    alert('Error logging in: ' + error.message);
-                });
-        }
-
-        window.logout = function logout() {
-            signOut(auth)
-                .then(() => {
-                    console.log('Logged out');
-                })
-                .catch(error => {
-                    console.error('Error logging out:', error);
-                    alert('Error logging out: ' + error.message);
-                });
-        }
-
-        window.transfer = function transfer() {
-            const amount = parseFloat(amountInput.value);
-            if (isNaN(amount) || amount <= 0) {
-                alert('Please enter a valid amount');
-                return;
-            }
-            if (auth.currentUser.email !== userEmail) {
-                alert("Only Leonardo can transfer Pupicreditos.");
-                return;
-            }
-            if (currentSupply < amount) {
-                alert("Insufficient Pupicreditos supply.");
-                return;
-            }
-            const transaction = {
-                from: userEmail,
-                to: girlfriendEmail,
-                amount,
-                timestamp: serverTimestamp()
-            };
-            showLoadingBar();
-            addDoc(collection(db, 'transactions'), transaction)
-                .then(() => {
-                    currentSupply -= amount;
-                    updateSupply();
-                    amountInput.value = '';
-                    hideLoadingBar();
-                    loadWallet(); // Reload to see the transaction immediately
-                })
-                .catch(error => {
-                    console.error('Error transferring Pupicreditos:', error);
-                    alert('Error transferring Pupicreditos: ' + error.message);
-                    hideLoadingBar();
-                });
-        }
-
-        window.redeem = function redeem() {
-            const amount = parseFloat(redeemAmountInput.value);
-            const currentBalance = parseFloat(balanceElement.textContent.split(' ')[1]);
-            if (isNaN(amount) || amount <= 0 || amount > currentBalance) {
-                alert('Please enter a valid amount to redeem');
-                return;
-            }
-            if (auth.currentUser.email !== girlfriendEmail) {
-                alert("Only Yasmin can redeem Pupicreditos.");
-                return;
-            }
-            showLoadingBar();
-            const transaction = {
-                from: girlfriendEmail,
-                to: "burn",
-                amount,
-                timestamp: serverTimestamp()
-            };
-            addDoc(collection(db, 'transactions'), transaction)
-                .then(() => {
-                    redeemAmountInput.value = '';
-                    updateSupply();
-                    hideLoadingBar();
-                    redeemAmountText.textContent = amount;
-                    redeemMessage.style.display = 'block';
-                    setTimeout(() => {
-                        redeemMessage.style.display = 'none';
-                    }, 3000);
-                    loadWallet(); // Reload to see the transaction immediately
-                })
-                .catch(error => {
-                    console.error('Error redeeming Pupicreditos:', error);
-                    alert('Error redeeming Pupicreditos: ' + error.message);
-                    hideLoadingBar();
-                });
-        }
-
-        window.transferBack = function transferBack() {
-            const amount = parseFloat(transferBackAmountInput.value);
-            const currentBalance = parseFloat(balanceElement.textContent.split(' ')[1]);
-            if (isNaN(amount) || amount <= 0 || amount > currentBalance) {
-                alert('Please enter a valid amount to transfer back');
-                return;
-            }
-            if (auth.currentUser.email !== girlfriendEmail) {
-                alert("Only Yasmin can transfer Pupicreditos back to Leonardo.");
-                return;
-            }
-            showLoadingBar();
-            const transaction = {
-                from: girlfriendEmail,
-                to: userEmail,
-                amount,
-                timestamp: serverTimestamp()
-            };
-            addDoc(collection(db, 'transactions'), transaction)
-                .then(() => {
-                    currentSupply += amount; // Add the amount back to supply
-                    updateSupply();
-                    transferBackAmountInput.value = '';
-                    hideLoadingBar();
-                    loadWallet(); // Reload to see the transaction immediately
-                })
-                .catch(error => {
-                    console.error('Error transferring Pupicreditos back:', error);
-                    alert('Error transferring Pupicreditos back: ' + error.message);
-                    hideLoadingBar();
-                });
-        }
-
-        function loadWallet() {
-            const user = auth.currentUser;
-            const transactions = [];
-            const q = query(collection(db, 'transactions'), orderBy('timestamp', 'desc'), limit(50));
-            onSnapshot(q, snapshot => {
-                let balance = 0;
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data.to === user.email) {
-                        balance += data.amount;
-                    }
-                    if (data.from === user.email && data.to === "burn") {
-                        balance -= data.amount; // Subtract burned amount from balance
-                    }
-                    transactions.push(data);
-                });
-                if (balance < 0) balance = 0; // Prevent negative balance
-                if (user.email === girlfriendEmail) {
-                    balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
+    function updateSupply() {
+        const q = query(collection(db, 'transactions'));
+        onSnapshot(q, snapshot => {
+            let totalTransferred = 0;
+            let totalBurned = 0;
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.to === girlfriendEmail) {
+                    totalTransferred += doc.data().amount;
                 }
-                transactionsElement.innerHTML = transactions.map(t => 
-                    `<li>${t.amount} Pupicreditos from ${getDisplayName(t.from)} to ${getDisplayName(t.to)} on ${t.timestamp ? t.timestamp.toDate().toLocaleString() : 'Unknown'}</li>`).join('');
+                if (data.to === "burn") {
+                    totalBurned += doc.data().amount;
+                }
             });
-        }
+            currentSupply = totalSupply - totalTransferred + totalBurned;
+            supplyElement.textContent = `Remaining Supply: ${currentSupply} Pupicreditos`;
+        });
+    }
 
-        function updateSupply() {
-            const q = query(collection(db, 'transactions'));
-            onSnapshot(q, snapshot => {
-                let totalTransferred = 0;
-                let totalBurned = 0;
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data.to === girlfriendEmail) {
-                        totalTransferred += doc.data().amount;
-                    }
-                    if (data.to === "burn") {
-                        totalBurned += doc.data().amount;
-                    }
-                });
-                currentSupply = totalSupply - totalTransferred + totalBurned;
-                supplyElement.textContent = `Remaining Supply: ${currentSupply} Pupicreditos`;
-            });
-        }
+    function showLoadingBar() {
+        loadingBar.style.display = 'block';
+        loadingBar.firstElementChild.style.width = '0';
+        loadingBar.firstElementChild.style.animation = 'loading 2s forwards';
+    }
 
-        function showLoadingBar() {
-            loadingBar.style.display = 'block';
-            loadingBar.firstElementChild.style.width = '0';
-            loadingBar.firstElementChild.style.animation = 'loading 2s forwards';
-        }
+    function hideLoadingBar() {
+        setTimeout(() => {
+            loadingBar.style.display = 'none';
+        }, 2000);
+    }
 
-        function hideLoadingBar() {
-            setTimeout(() => {
-                loadingBar.style.display = 'none';
-            }, 2000);
+    function toggleTransactions() {
+        if (transactionsElement.classList.contains('hidden')) {
+            transactionsElement.classList.remove('hidden');
+            transactionsToggle.textContent = 'Hide Transactions';
+        } else {
+            transactionsElement.classList.add('hidden');
+            transactionsToggle.textContent = 'Show Transactions';
         }
+    }
 
-        function toggleTransactions() {
-            if (transactionsElement.classList.contains('hidden')) {
-                transactionsElement.classList.remove('hidden');
-                transactionsToggle.textContent = 'Hide Transactions';
-            } else {
-                transactionsElement.classList.add('hidden');
-                transactionsToggle.textContent = 'Show Transactions';
-            }
-        }
+    function getDisplayName(email) {
+        if (email === userEmail) return "Leo";
+        if (email === girlfriendEmail) return "Yasmin";
+        if (email === "burn") return "burn";
+        return email;
+    }
 
-        function getDisplayName(email) {
-            if (email === userEmail) return "Leo";
-            if (email === girlfriendEmail) return "Yasmin";
-            if (email === "burn") return "burn";
-            return email;
-        }
-
-        // Ensure the function is defined within the script and accessible globally
-        window.toggleTransactions = toggleTransactions;
-    </script>
-</body>
-</html>
+    // Ensure the functions are defined within the script and accessible globally
+    window.toggleTransactions = toggleTransactions;
+    window.login = login;
+    window.logout = logout;
+    window.transfer = transfer;
+    window.redeem = redeem;
+    window.transferBack = transferBack;
+</script>
 
