@@ -9,7 +9,7 @@
 <body>
     <div id="app">
         <h1>Pupicreditos Wallet</h1>
-        <div id="login-form" class="hidden">
+        <div id="login-form" class="">
             <h2>Login</h2>
             <input type="email" id="email" placeholder="Email">
             <input type="password" id="password" placeholder="Password">
@@ -71,8 +71,12 @@
             const email = emailInput.value;
             const password = passwordInput.value;
             signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log('Logged in:', userCredential.user);
+                })
                 .catch(error => {
                     console.error('Error logging in:', error);
+                    alert('Error logging in: ' + error.message);
                 });
         }
 
@@ -80,13 +84,24 @@
             const email = emailInput.value;
             const password = passwordInput.value;
             createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log('Signed up:', userCredential.user);
+                })
                 .catch(error => {
                     console.error('Error signing up:', error);
+                    alert('Error signing up: ' + error.message);
                 });
         }
 
         function logout() {
-            signOut(auth);
+            signOut(auth)
+                .then(() => {
+                    console.log('Logged out');
+                })
+                .catch(error => {
+                    console.error('Error logging out:', error);
+                    alert('Error logging out: ' + error.message);
+                });
         }
 
         function transfer() {
@@ -109,6 +124,7 @@
                 })
                 .catch(error => {
                     console.error('Error transferring Pupicreditos:', error);
+                    alert('Error transferring Pupicreditos: ' + error.message);
                 });
         }
 
