@@ -65,12 +65,13 @@
             color: #023047;
         }
 
-        #balance {
+        #balance, #supply {
             color: #ffb703;
+            font-size: 1.2em;
+            font-weight: bold;
         }
 
         #supply {
-            color: #ffb703;
             display: none; /* Oculto por defecto */
         }
 
@@ -299,6 +300,7 @@
                 alert("Only Yasmin can transfer Pupicreditos back to Leonardo.");
                 return;
             }
+            showLoadingBar();
             const transaction = {
                 from: girlfriendEmail,
                 to: userEmail,
@@ -309,41 +311,38 @@
                 .then(() => {
                     transferBackAmountInput.value = '';
                     loadWallet();
+                    hideLoadingBar();
                 })
                 .catch(error => {
                     console.error('Error transferring Pupicreditos back:', error);
                     alert('Error transferring Pupicreditos back: ' + error.message);
+                    hideLoadingBar();
                 });
         }
 
         function loadWallet() {
             const user = auth.currentUser;
-            if (user.email === girlfriendEmail) {
-                const q = query(collection(db, 'transactions'), where('to', '==', user.email), orderBy('timestamp', 'desc'), limit(50));
-                onSnapshot(q, snapshot => {
-                    let balance = 0;
-                    const transactions = [];
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
+            const transactions = [];
+            const q = query(collection(db, 'transactions'), orderBy('timestamp', 'desc'), limit(50));
+            onSnapshot(q, snapshot => {
+                let balance = 0;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.to === user.email) {
                         balance += data.amount;
-                        transactions.push(data);
-                    });
-
-                    const qBurn = query(collection(db, 'transactions'), where('from', '==', user.email), where('to', '==', 'burn'));
-                    onSnapshot(qBurn, snapshot => {
-                        snapshot.forEach(doc => {
-                            const data = doc.data();
-                            balance -= data.amount; // Restar el monto quemado del balance
-                            transactions.push(data);
-                        });
-
-                        balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
-                        transactionsElement.innerHTML = transactions.slice(-50).map(t => 
-                            `<li>${t.amount} Pupicreditos from ${t.from} on ${t.timestamp.toDate().toLocaleString()}</li>`).join('');
-                    });
+                    }
+                    if (data.from === user.email && data.to === "burn") {
+                        balance -= data.amount; // Restar el monto quemado del balance
+                    }
+                    transactions.push(data);
                 });
-            }
-            updateSupply();
+                if (user.email === girlfriendEmail) {
+                    balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
+                }
+                transactionsElement.innerHTML = transactions.map(t => 
+                    `<li>${t.amount} Pupicreditos from ${t.from} to ${t.to} on ${t.timestamp.toDate().toLocaleString()}</li>`).join('');
+                updateSupply();
+            });
         }
 
         function updateSupply() {
@@ -371,4 +370,3 @@
     </script>
 </body>
 </html>
-
