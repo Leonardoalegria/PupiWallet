@@ -119,7 +119,7 @@
             margin-top: 20px;
         }
 
-        #transactions-toggle {
+        #transactions-toggle, #transactions-refresh {
             background-color: #007AFF;
             color: white;
             border: none;
@@ -127,9 +127,10 @@
             cursor: pointer;
             padding: 10px 20px;
             margin-top: 10px;
+            margin-right: 5px;
         }
 
-        #transactions-toggle:hover {
+        #transactions-toggle:hover, #transactions-refresh:hover {
             background-color: #005BB5;
         }
     </style>
@@ -166,6 +167,7 @@
             <div id="redeem-message">You now have $<span id="redeem-amount"></span> ready to spend!</div>
             <div id="transactions-container">
                 <button id="transactions-toggle" onclick="toggleTransactions()">Show Transactions</button>
+                <button id="transactions-refresh" onclick="loadWallet()">&#x21bb;</button>
                 <ul id="transactions" class="hidden"></ul>
             </div>
         </div>
@@ -202,7 +204,7 @@
         const supplyElement = document.getElementById('supply');
         const transactionsElement = document.getElementById('transactions');
         const transactionsToggle = document.getElementById('transactions-toggle');
-        const leonardoActions = document.getElementById('leonardo-actions');
+        const leonardoActions = document.getElementBy('leonardo-actions');
         const yasminActions = document.getElementById('yasmin-actions');
         const loadingBar = document.getElementById('loading-bar');
         const redeemMessage = document.getElementById('redeem-message');
@@ -389,7 +391,7 @@
                     balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
                 }
                 transactionsElement.innerHTML = transactions.map(t => 
-                    `<li>${t.amount} Pupicreditos from ${getDisplayName(t.from)} to ${getDisplayName(t.to)} on ${t.timestamp.toDate().toLocaleString()}</li>`).join('');
+                    `<li>${t.amount} Pupicreditos from ${getDisplayName(t.from)} to ${getDisplayName(t.to)} on ${t.timestamp ? t.timestamp.toDate().toLocaleString() : 'Unknown'}</li>`).join('');
             });
         }
 
@@ -446,3 +448,4 @@
     </script>
 </body>
 </html>
+
