@@ -1,0 +1,2 @@
+# PupiWallet
+Wallet for PupiCredits
