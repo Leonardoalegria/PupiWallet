@@ -338,83 +338,89 @@
             });
     }
 
-    window.transferBack = function transferBack() {
-        const amount = parseFloat(transferBackAmountInput.value);
-        const currentBalance = parseFloat(balanceElement.textContent.split(' ')[1]);
-        if (isNaN(amount) || amount <= 0 || amount > currentBalance) {
-            alert('Please enter a valid amount to transfer back');
-            return;
-        }
-        if (auth.currentUser.email !== girlfriendEmail) {
-            alert("Only Yasmin can transfer Pupicreditos back to Leonardo.");
-            return;
-        }
-        showLoadingBar();
-        const transaction = {
-            from: girlfriendEmail,
-            to: userEmail,
-            amount,
-            timestamp: serverTimestamp()
-        };
-        addDoc(collection(db, 'transactions'), transaction)
-            .then(() => {
-                currentSupply += amount; // Add the amount back to supply
-                updateSupply();
-                transferBackAmountInput.value = '';
-                hideLoadingBar();
-                loadWallet(); // Reload to see the transaction immediately
-            })
-            .catch(error => {
-                console.error('Error transferring Pupicreditos back:', error);
-                alert('Error transferring Pupicreditos back: ' + error.message);
-                hideLoadingBar();
-            });
+  window.transferBack = function transferBack() {
+    const amount = parseFloat(transferBackAmountInput.value);
+    const currentBalance = parseFloat(balanceElement.textContent.split(' ')[1]);
+    if (isNaN(amount) || amount <= 0 || amount > currentBalance) {
+        alert('Please enter a valid amount to transfer back');
+        return;
     }
+    if (auth.currentUser.email !== girlfriendEmail) {
+        alert("Only Yasmin can transfer Pupicreditos back to Leonardo.");
+        return;
+    }
+    showLoadingBar();
+    const transaction = {
+        from: girlfriendEmail,
+        to: userEmail,
+        amount,
+        timestamp: serverTimestamp()
+    };
+    addDoc(collection(db, 'transactions'), transaction)
+        .then(() => {
+            currentSupply += amount; // Add the amount back to supply
+            updateSupply();
+            transferBackAmountInput.value = '';
+            hideLoadingBar();
+            loadWallet(); // Reload to see the transaction immediately
+        })
+        .catch(error => {
+            console.error('Error transferring Pupicreditos back:', error);
+            alert('Error transferring Pupicreditos back: ' + error.message);
+            hideLoadingBar();
+        });
+}
 
-    function loadWallet() {
-        const user = auth.currentUser;
-        const transactions = [];
-        const q = query(collection(db, 'transactions'), orderBy('timestamp', 'desc'), limit(50));
-        onSnapshot(q, snapshot => {
-            let balance = 0;
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                if (data.to === user.email) {
-                    balance += data.amount;
-                }
-                if (data.from === user.email && data.to === "burn") {
-                    balance -= data.amount; // Subtract burned amount from balance
-                }
-                transactions.push(data);
-            });
-            if (balance < 0) balance = 0; // Prevent negative balance
-            if (user.email === girlfriendEmail) {
-                balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
+function loadWallet() {
+    const user = auth.currentUser;
+    const transactions = [];
+    const q = query(collection(db, 'transactions'), orderBy('timestamp', 'desc'), limit(50));
+    onSnapshot(q, snapshot => {
+        let balance = 0;
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.to === user.email) {
+                balance += data.amount;
             }
-            transactionsElement.innerHTML = transactions.map(t => 
-                `<li>${t.amount} Pupicreditos from ${getDisplayName(t.from)} to ${getDisplayName(t.to)} on ${t.timestamp ? t.timestamp.toDate().toLocaleString() : 'Unknown'}</li>`).join('');
+            if (data.from === user.email && data.to === "burn") {
+                balance -= data.amount; // Subtract burned amount from balance
+            }
+            if (data.from === user.email && data.to === userEmail) {
+                balance -= data.amount; // Subtract transferred back amount from balance
+            }
+            if (data.from === userEmail && data.to === user.email) {
+                currentSupply += data.amount; // Add the amount back to supply
+            }
+            transactions.push(data);
         });
-    }
+        if (balance < 0) balance = 0; // Prevent negative balance
+        if (user.email === girlfriendEmail) {
+            balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
+        }
+        transactionsElement.innerHTML = transactions.map(t => 
+            `<li>${t.amount} Pupicreditos from ${getDisplayName(t.from)} to ${getDisplayName(t.to)} on ${t.timestamp ? t.timestamp.toDate().toLocaleString() : 'Unknown'}</li>`).join('');
+    });
+}
 
-    function updateSupply() {
-        const q = query(collection(db, 'transactions'));
-        onSnapshot(q, snapshot => {
-            let totalTransferred = 0;
-            let totalBurned = 0;
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                if (data.to === girlfriendEmail) {
-                    totalTransferred += doc.data().amount;
-                }
-                if (data.to === "burn") {
-                    totalBurned += doc.data().amount;
-                }
-            });
-            currentSupply = totalSupply - totalTransferred + totalBurned;
-            supplyElement.textContent = `Remaining Supply: ${currentSupply} Pupicreditos`;
+function updateSupply() {
+    const q = query(collection(db, 'transactions'));
+    onSnapshot(q, snapshot => {
+        let totalTransferred = 0;
+        let totalBurned = 0;
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.to === girlfriendEmail) {
+                totalTransferred += doc.data().amount;
+            }
+            if (data.to === "burn") {
+                totalBurned += doc.data().amount;
+            }
         });
-    }
-
+        currentSupply = totalSupply - totalTransferred + totalBurned;
+        supplyElement.textContent = `Remaining Supply: ${currentSupply} Pupicreditos`;
+    });
+}
+       
     function showLoadingBar() {
         loadingBar.style.display = 'block';
         loadingBar.firstElementChild.style.width = '0';
