@@ -172,7 +172,8 @@
             </div>
         </div>
     </div>
-  <script type="module">
+
+   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -450,5 +451,5 @@
     window.transfer = transfer;
     window.redeem = redeem;
     window.transferBack = transferBack;
+    window.loadWallet = loadWallet;
 </script>
-
