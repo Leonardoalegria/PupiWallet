@@ -32,7 +32,8 @@
             display: block;
             margin: 10px auto;
             padding: 10px;
-            width: 80%;
+            width: 50%;
+            font-size: 1.2em;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
@@ -357,6 +358,7 @@
                     }
                     transactions.push(data);
                 });
+                if (balance < 0) balance = 0; // Prevent negative balance
                 if (user.email === girlfriendEmail) {
                     balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
                 }
