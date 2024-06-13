@@ -252,7 +252,6 @@
                     currentSupply -= amount;
                     updateSupply();
                     amountInput.value = '';
-                    loadWallet();
                     hideLoadingBar();
                 })
                 .catch(error => {
@@ -281,7 +280,6 @@
             addDoc(collection(db, 'transactions'), transaction)
                 .then(() => {
                     redeemAmountInput.value = '';
-                    loadWallet();
                     alert(`Redeemed ${amount} Pupicreditos for $${amount} USD`);
                 })
                 .catch(error => {
@@ -310,7 +308,6 @@
             addDoc(collection(db, 'transactions'), transaction)
                 .then(() => {
                     transferBackAmountInput.value = '';
-                    loadWallet();
                     hideLoadingBar();
                 })
                 .catch(error => {
