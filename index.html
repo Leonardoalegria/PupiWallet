@@ -110,7 +110,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCsAC7v-QXjUm4vvU7As4yRsIH9I5hgm28",
@@ -125,6 +125,7 @@
         const auth = getAuth();
         const db = getFirestore();
 
+        const totalSupply = 10000;
         let currentSupply = totalSupply;
 
         const loginForm = document.getElementById('login-form');
@@ -242,8 +243,6 @@
             };
             addDoc(collection(db, 'transactions'), transaction)
                 .then(() => {
-                    currentSupply += amount; // Incrementar el suministro actual al quemar tokens
-                    alert(`Redeemed ${amount} Pupicreditos for $${amount} USD`);
                     redeemAmountInput.value = '';
                     loadWallet();
                 })
@@ -282,29 +281,41 @@
 
         function loadWallet() {
             const user = auth.currentUser;
-            const q = query(collection(db, 'transactions'), where('to', '==', user.email));
+            const q = query(collection(db, 'transactions'), where('to', '==', user.email), orderBy('timestamp', 'desc'), limit(50));
+            const qBurn = query(collection(db, 'transactions'), where('to', '==', 'burn'), orderBy('timestamp', 'desc'), limit(50));
             onSnapshot(q, snapshot => {
                 let balance = 0;
                 const transactions = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    if (data.to === "burn" && user.email === girlfriendEmail) {
-                        balance -= data.amount; // Restar el monto quemado del balance
-                    } else {
-                        balance += data.amount; // Sumar el monto recibido al balance
-                    }
+                    balance += data.amount;
                     transactions.push(data);
                 });
-                balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
-                // Mostrar solo las últimas 50 transacciones
-                transactionsElement.innerHTML = transactions.slice(-50).map(t => 
-                    `<li>${t.amount} Pupicreditos from ${t.from} on ${t.timestamp.toDate().toLocaleString()}</li>`).join('');
+                onSnapshot(qBurn, snapshot => {
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.from === girlfriendEmail) {
+                            balance -= data.amount;
+                        }
+                        transactions.push(data);
+                    });
+                    balanceElement.textContent = `Balance: ${balance} Pupicreditos`;
+                    transactionsElement.innerHTML = transactions.slice(-50).map(t => 
+                        `<li>${t.amount} Pupicreditos from ${t.from} on ${t.timestamp.toDate().toLocaleString()}</li>`).join('');
+                });
             });
             updateSupply();
         }
 
         function updateSupply() {
-            supplyElement.textContent = `Remaining Supply: ${currentSupply} Pupicreditos`;
+            const q = query(collection(db, 'transactions'), where('to', '==', girlfriendEmail));
+            onSnapshot(q, snapshot => {
+                let totalTransferred = 0;
+                snapshot.forEach(doc => {
+                    totalTransferred += doc.data().amount;
+                });
+                supplyElement.textContent = `Remaining Supply: ${totalSupply - totalTransferred} Pupicreditos`;
+            });
         }
     </script>
 </body>
