@@ -65,7 +65,7 @@
             width: 30px;
             height: 30px;
             vertical-align: middle;
-            margin-right: 10px;
+            margin-left: 10px;
         }
 
         h1, h2, h3 {
@@ -138,7 +138,7 @@
 </head>
 <body>
     <div id="app">
-        <h1><img src="pupi-logo.png" alt="Pupy Credit Icon" class="icon">PupiWallet</h1>
+        <h1>PupiWallet<img src="pupi-logo.png" alt="Pupy Credit Icon" class="icon"></h1>
         <div id="login-form">
             <h2>Login</h2>
             <input type="email" id="email" placeholder="Email">
@@ -146,10 +146,9 @@
             <button onclick="login()">Login</button>
         </div>
         <div id="wallet" class="hidden">
-            <h2>Wallet</h2>
             <div id="balance">Balance: 0 Pupicreditos</div>
-            <div id="supply">Remaining Supply: 10000 Pupicreditos</div>
             <button onclick="logout()">Logout</button>
+            <div id="supply">Remaining Supply: 10000 Pupicreditos</div>
             <div id="leonardo-actions" class="hidden">
                 <h3>Transfer Pupicreditos</h3>
                 <input type="number" id="amount" placeholder="Amount" class="short-input">
@@ -358,9 +357,10 @@
             };
             addDoc(collection(db, 'transactions'), transaction)
                 .then(() => {
+                    currentSupply += amount; // Add the amount back to supply
+                    updateSupply();
                     transferBackAmountInput.value = '';
                     hideLoadingBar();
-                    updateSupply();
                     loadWallet(); // Reload to see the transaction immediately
                 })
                 .catch(error => {
@@ -403,10 +403,10 @@
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     if (data.to === girlfriendEmail) {
-                        totalTransferred += data.amount;
+                        totalTransferred += doc.data().amount;
                     }
                     if (data.to === "burn") {
-                        totalBurned += data.amount;
+                        totalBurned += doc.data().amount;
                     }
                 });
                 currentSupply = totalSupply - totalTransferred + totalBurned;
@@ -445,3 +445,4 @@
     </script>
 </body>
 </html>
+
