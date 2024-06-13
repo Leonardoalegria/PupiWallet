@@ -9,7 +9,7 @@
 <body>
     <div id="app">
         <h1>Pupicreditos Wallet</h1>
-        <div id="login-form" class="">
+        <div id="login-form">
             <h2>Login</h2>
             <input type="email" id="email" placeholder="Email">
             <input type="password" id="password" placeholder="Password">
@@ -58,10 +58,12 @@
 
         onAuthStateChanged(auth, user => {
             if (user) {
+                console.log("User is logged in:", user);
                 loginForm.classList.add('hidden');
                 wallet.classList.remove('hidden');
                 loadWallet();
             } else {
+                console.log("No user is logged in");
                 loginForm.classList.remove('hidden');
                 wallet.classList.add('hidden');
             }
@@ -70,6 +72,7 @@
         function login() {
             const email = emailInput.value;
             const password = passwordInput.value;
+            console.log("Attempting to log in with:", email);
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     console.log('Logged in:', userCredential.user);
@@ -83,6 +86,7 @@
         function signUp() {
             const email = emailInput.value;
             const password = passwordInput.value;
+            console.log("Attempting to sign up with:", email);
             createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     console.log('Signed up:', userCredential.user);
