@@ -32,10 +32,14 @@
             display: block;
             margin: 10px auto;
             padding: 10px;
-            width: 50%;
-            font-size: 1.2em;
+            width: 80%;
             border: 1px solid #ccc;
             border-radius: 5px;
+        }
+
+        .short-input {
+            width: 50%;
+            font-size: 1.2em;
         }
 
         button {
@@ -130,15 +134,15 @@
             <button onclick="logout()">Logout</button>
             <div id="leonardo-actions" class="hidden">
                 <h3>Transfer Pupicreditos</h3>
-                <input type="number" id="amount" placeholder="Amount">
+                <input type="number" id="amount" placeholder="Amount" class="short-input">
                 <button onclick="transfer()">Transfer</button>
             </div>
             <div id="yasmin-actions" class="hidden">
                 <h3>Redeem Pupicreditos</h3>
-                <input type="number" id="redeemAmount" placeholder="Amount to Redeem">
+                <input type="number" id="redeemAmount" placeholder="Amount to Redeem" class="short-input">
                 <button onclick="redeem()">Redeem</button>
                 <h3>Transfer Pupicreditos to Leonardo</h3>
-                <input type="number" id="transferBackAmount" placeholder="Amount to Transfer Back">
+                <input type="number" id="transferBackAmount" placeholder="Amount to Transfer Back" class="short-input">
                 <button onclick="transferBack()">Transfer Back</button>
             </div>
             <div id="loading-bar">
@@ -278,7 +282,7 @@
 
         window.redeem = function redeem() {
             const amount = parseFloat(redeemAmountInput.value);
-            if (isNaN(amount) || amount <= 0) {
+            if (isNaN(amount) || amount <= 0 || amount > parseFloat(balanceElement.textContent.split(' ')[1])) {
                 alert('Please enter a valid amount to redeem');
                 return;
             }
@@ -314,7 +318,7 @@
 
         window.transferBack = function transferBack() {
             const amount = parseFloat(transferBackAmountInput.value);
-            if (isNaN(amount) || amount <= 0) {
+            if (isNaN(amount) || amount <= 0 || amount > parseFloat(balanceElement.textContent.split(' ')[1])) {
                 alert('Please enter a valid amount to transfer back');
                 return;
             }
