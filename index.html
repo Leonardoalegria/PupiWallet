@@ -6,9 +6,19 @@
     <title>Pupicreditos Wallet</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
         #app {
             text-align: center;
-            background: white;
+            background: #ffffff;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -23,19 +33,22 @@
             margin: 10px auto;
             padding: 10px;
             width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
 
         button {
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #8ecae6;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #219ebc;
         }
 
         ul {
@@ -46,6 +59,14 @@
         .icon {
             width: 50px;
             height: 50px;
+        }
+
+        h1, h2, h3 {
+            color: #023047;
+        }
+
+        #balance, #supply {
+            color: #ffb703;
         }
     </style>
 </head>
@@ -84,7 +105,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCsAC7v-QXjUm4vvU7As4yRsIH9I5hgm28",
