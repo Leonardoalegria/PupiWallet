@@ -167,11 +167,14 @@
                 <div></div>
             </div>
             <div id="redeem-message">You now have $<span id="redeem-amount"></span> ready to spend!</div>
-            <div id="transactions-container">
-                <button id="transactions-toggle" onclick="toggleTransactions()">Show Transactions</button>
-                <button id="transactions-refresh" onclick="loadWallet()">&#x21bb;</button>
-                <ul id="transactions" class="hidden"></ul>
-            </div>
+           <div id="transactions-container">
+    <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+        <button id="transactions-toggle" onclick="toggleTransactions()">Show Transactions</button>
+        <button id="transactions-refresh" onclick="loadWallet()">&#x21bb;</button>
+    </div>
+    <ul id="transactions" class="hidden"></ul>
+</div>
+
         </div>
     </div>
     <script type="module">
