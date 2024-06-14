@@ -116,7 +116,7 @@
         }
 
         #transactions-container {
-            max-height: 400px; /* Set the maximum height of the container */
+            max-height: 200px; /* Set the maximum height of the container */
             overflow-y: auto; /* Enable vertical scrolling */
             margin-top: 20px;
         }
@@ -134,6 +134,12 @@
 
         #transactions-toggle:hover, #transactions-refresh:hover {
             background-color: #005BB5;
+        }
+
+        .fixed-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -167,14 +173,13 @@
                 <div></div>
             </div>
             <div id="redeem-message">You now have $<span id="redeem-amount"></span> ready to spend!</div>
-           <div id="transactions-container">
-    <div style="display: flex; justify-content: center; margin-bottom: 10px;">
-        <button id="transactions-toggle" onclick="toggleTransactions()">Show Transactions</button>
-        <button id="transactions-refresh" onclick="loadWallet()">&#x21bb;</button>
-    </div>
-    <ul id="transactions" class="hidden"></ul>
-</div>
-
+            <div class="fixed-buttons">
+                <button id="transactions-toggle" onclick="toggleTransactions()">Show Transactions</button>
+                <button id="transactions-refresh" onclick="loadWallet()">&#x21bb;</button>
+            </div>
+            <div id="transactions-container">
+                <ul id="transactions" class="hidden"></ul>
+            </div>
         </div>
     </div>
     <script type="module">
@@ -226,7 +231,7 @@
                     balanceElement.style.display = "block";
                     supplyElement.style.display = "none"; // Hide supply for Yasmin
                     document.getElementById('logout').style.display = 'block'; // Show logout button
-                    balanceElement.insertAdjacentElement('afterend', document.getElementById('logout'));
+                    wallet.insertBefore(document.getElementById('logout'), balanceElement); // Move logout button above balance for Yasmin
                 } else if (user.email === userEmail) {
                     console.log("Leonardo is logged in:", user);
                     leonardoActions.classList.remove('hidden');
