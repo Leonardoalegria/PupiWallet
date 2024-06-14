@@ -93,7 +93,7 @@
             height: 100%;
             background-color: #007AFF;
             position: absolute;
-            animation: loading 2s ease-in-out;
+            animation: loading 2s forwards;
         }
 
         @keyframes loading {
@@ -116,9 +116,10 @@
         }
 
         #transactions-container {
-    max-height: 200px; /* Set the maximum height of the container */
-    overflow-y: auto; /* Enable vertical scrolling */
-}
+            max-height: 400px; /* Set the maximum height of the container */
+            overflow-y: auto; /* Enable vertical scrolling */
+            margin-top: 20px;
+        }
 
         #transactions-toggle, #transactions-refresh {
             background-color: #007AFF;
@@ -146,8 +147,8 @@
             <button onclick="login()">Login</button>
         </div>
         <div id="wallet" class="hidden">
+            <button id="logout" onclick="logout()">Logout</button>
             <div id="balance">Balance: 0 Pupicreditos</div>
-            <button onclick="logout()">Logout</button>
             <div id="supply">Remaining Supply: 10000 Pupicreditos</div>
             <div id="leonardo-actions" class="hidden">
                 <h3>Transfer Pupicreditos</h3>
@@ -182,7 +183,7 @@
             apiKey: "AIzaSyCsAC7v-QXjUm4vvU7As4yRsIH9I5hgm28",
             authDomain: "pupiwallet.firebaseapp.com",
             projectId: "pupiwallet",
-            storageBucket: "pupiwallet.appspot.com",
+            storageBucket: "pupwallet.appspot.com",
             messagingSenderId: "936137192119",
             appId: "1:936137192119:web:abdc9756a96184481b5332"
         };
@@ -220,6 +221,9 @@
                     console.log("Yasmin is logged in:", user);
                     yasminActions.classList.remove('hidden');
                     balanceElement.style.display = "block";
+                    supplyElement.style.display = "none"; // Hide supply for Yasmin
+                    document.getElementById('logout').style.display = 'block'; // Show logout button
+                    balanceElement.insertAdjacentElement('afterend', document.getElementById('logout'));
                 } else if (user.email === userEmail) {
                     console.log("Leonardo is logged in:", user);
                     leonardoActions.classList.remove('hidden');
@@ -420,7 +424,9 @@
                     }
                 });
                 currentSupply = totalSupply - totalTransferred + totalBurned + totalTransferredBack;
-                supplyElement.textContent = `Remaining Supply: ${currentSupply} Pupicreditos`;
+                if (auth.currentUser.email === userEmail) { // Show supply only to Leonardo
+                    supplyElement.textContent = `Remaining Supply: ${currentSupply} Pupicreditos`;
+                }
             });
         }
 
