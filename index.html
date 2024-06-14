@@ -141,6 +141,11 @@
             justify-content: center;
             margin-bottom: 10px;
         }
+
+        .centered {
+            margin: 0 auto;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -182,6 +187,7 @@
             </div>
         </div>
     </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -223,34 +229,36 @@
         const userEmail = "leoalegriaspam@gmail.com";
         const girlfriendEmail = "yasminagueropreply@gmail.com";
 
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                if (user.email === girlfriendEmail) {
-                    console.log("Yasmin is logged in:", user);
-                    yasminActions.classList.remove('hidden');
-                    balanceElement.style.display = "block";
-                    supplyElement.style.display = "none"; // Hide supply for Yasmin
-                    document.getElementById('logout').style.display = 'block'; // Show logout button
-                    wallet.insertBefore(document.getElementById('logout'), balanceElement); // Move logout button above balance for Yasmin
-                } else if (user.email === userEmail) {
-                    console.log("Leonardo is logged in:", user);
-                    leonardoActions.classList.remove('hidden');
-                    supplyElement.style.display = "block"; // Show supply only to Leonardo
-                    balanceElement.style.display = "none"; // Hide balance for Leonardo
-                }
-                loginForm.classList.add('hidden');
-                wallet.classList.remove('hidden');
-                loadWallet();
-            } else {
-                console.log("No user is logged in");
-                loginForm.classList.remove('hidden');
-                wallet.classList.add('hidden');
-                yasminActions.classList.add('hidden');
-                leonardoActions.classList.add('hidden');
-                supplyElement.style.display = "none";
-                balanceElement.style.display = "none";
-            }
-        });
+       onAuthStateChanged(auth, user => {
+    if (user) {
+        if (user.email === girlfriendEmail) {
+            console.log("Yasmin is logged in:", user);
+            yasminActions.classList.remove('hidden');
+            balanceElement.style.display = "block";
+            supplyElement.style.display = "none"; // Hide supply for Yasmin
+            document.getElementById('logout').classList.add('centered'); // Center the logout button for Yasmin
+            document.getElementById('logout').style.display = 'block'; // Show logout button
+            wallet.insertBefore(document.getElementById('logout'), balanceElement); // Move logout button above balance for Yasmin
+        } else if (user.email === userEmail) {
+            console.log("Leonardo is logged in:", user);
+            leonardoActions.classList.remove('hidden');
+            supplyElement.style.display = "block"; // Show supply only to Leonardo
+            balanceElement.style.display = "none"; // Hide balance for Leonardo
+            document.getElementById('logout').classList.remove('centered'); // Remove the center class for Leonardo
+        }
+        loginForm.classList.add('hidden');
+        wallet.classList.remove('hidden');
+        loadWallet();
+    } else {
+        console.log("No user is logged in");
+        loginForm.classList.remove('hidden');
+        wallet.classList.add('hidden');
+        yasminActions.classList.add('hidden');
+        leonardoActions.classList.add('hidden');
+        supplyElement.style.display = "none";
+        balanceElement.style.display = "none";
+    }
+});
 
         window.login = function login() {
             const email = emailInput.value;
